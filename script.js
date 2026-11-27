@@ -139,7 +139,13 @@
     let cur = set[0].map(v => v.slice()), glowA = ga[0];
     for (let i = 1; i < scenes.length; i++) {
       // the next scene takes over while its top travels from 62 % to 30 % of the screen
-      const t = smooth((0.62 * (H || innerHeight) - scenes[i].getBoundingClientRect().top) / (0.32 * (H || innerHeight)));
+      const vh = H || innerHeight;
+      let t = smooth((0.62 * vh - scenes[i].getBoundingClientRect().top) / (0.32 * vh));
+      // the last scene sits at the bottom of the page and cannot rise far: finish it as the page ends
+      if (i === scenes.length - 1) {
+        const left = document.documentElement.scrollHeight - vh - scrollY;
+        t = Math.max(t, smooth(1 - left / (0.4 * vh)) * (t > 0 ? 1 : 0));
+      }
       if (t <= 0) break;
       cur = cur.map((c, k) => c.map((v, j) => v + (set[i][k][j] - v) * t));
       glowA = glowA + (ga[i] - glowA) * t;
@@ -198,7 +204,8 @@
     // --- light that follows the atom (the background's only light source)
     {
       const g1 = { x: lerp(cx, tx, win(q2, 0.3, 1)), y: lerp(cy, tipY, win(q2, 0.3, 1)) };
-      const gx = lerp(g1.x, D.x, q4), gy = lerp(g1.y, D.y, q4);
+      const gq = win(q4, 0, 0.6);                                   // same pace as the rider landing at the email
+      const gx = lerp(g1.x, D.x, gq), gy = lerp(g1.y, D.y, gq);
       const gr = Math.max(W, H) * lerp(0.55, 0.42, win(q2, 0, 1));
       const g = ctx.createRadialGradient(gx, gy, 0, gx, gy, gr);
       const rgb = C.glow.slice(1).match(/../g).map(h => parseInt(h, 16)).join(',');
