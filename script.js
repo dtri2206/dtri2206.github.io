@@ -486,13 +486,27 @@
       peek.style.transform = `translate3d(${px.x + 24}px, ${py.x - 90}px, 0) rotate(${rot.toFixed(2)}deg) scale(${0.85 + 0.15 * s})`;
     };
     px.on(render); py.on(render); ps.on(render);
+    // small previews (assets/img/peek/*), fetched while the browser is idle after load
+    const previewOf = img => img.getAttribute('src').replace('assets/img/', 'assets/img/peek/');
+    const cache = new Map();
+    const preload = src => {
+      if (!cache.has(src)) { const im = new Image(); im.decoding = 'async'; im.src = src; cache.set(src, im.decode ? im.decode().catch(() => {}) : Promise.resolve()); }
+      return cache.get(src);
+    };
+    const warm = () => rows.forEach(r => preload(previewOf($('img', r))));
+    addEventListener('load', () => (window.requestIdleCallback || setTimeout)(warm, { timeout: 1500 }));
+    let want = null;
     rows.forEach(row => {
       row.addEventListener('pointerenter', e => {
         if (!finePointer.matches || e.pointerType !== 'mouse') return;
-        const img = $('img', row);
-        pimg.src = img.currentSrc || img.src;
+        const src = previewOf($('img', row));
+        want = src;
         if (!inside) { px.jump(e.clientX); py.jump(e.clientY); }
-        inside = true; ps.to(1);
+        inside = true;
+        preload(src).then(() => {
+          if (want !== src || !inside) return;      // the pointer moved on before it was ready
+          pimg.src = src; ps.to(1);
+        });
       });
     });
     const list = $('.awards');
