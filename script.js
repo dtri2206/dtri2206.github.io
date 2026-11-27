@@ -75,14 +75,14 @@
   const canvas = $('#film'), ctx = canvas.getContext('2d');
   const slotA = $('#slot-atom'), slotB = $('#slot-layers'), slotD = $('#slot-mini'), rail = $('#rail');
   const dots = $$('[data-dot]'), stops = $$('[data-stop]');
-  const aboutText = $('.about__text'), iris = $('#iris'), bar = $('#progress');
+  const aboutText = $('.about__text'), iris = $('#iris'), bar = $('#progress'), tile = $('#element');
   const ins = $$('[data-in]'), rises = $$('[data-rise]');
   const navLinks = $$('.top__nav a'), navSecs = navLinks.map(a => document.getElementById(a.dataset.section));
   let W = 0, H = 0, dpr = 1, C = {};
 
   const head = new Image(); let headOK = false;
   head.onload = () => { headOK = true; }; head.src = 'assets/img/headshot.jpg';
-  const device = new Image(); device.src = 'assets/img/sate-device-hand.webp';
+  const device = new Image(); device.src = 'assets/img/sate-device.webp';
 
   function size() {
     dpr = Math.min(devicePixelRatio || 1, 2);
@@ -90,7 +90,47 @@
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const root = document.documentElement;
-    C = { blue: cssVar(root, '--blue'), ink: cssVar(root, '--ink'), rule: cssVar(root, '--rule'), soft: cssVar(root, '--blue-soft'), paper: cssVar(root, '--paper') };
+    applyPalette();
+  }
+  /* Scene colours (UB palette): white -> night blue -> sky -> white -> UB blue.
+     The page blends between them as each section reaches the middle of the screen. */
+  const KEYS = ['paper', 'surface', 'ink', 'muted', 'rule', 'blue', 'soft', 'spark'];
+  const PAL = {
+    light: [
+      ['#f6f7f9', '#ffffff', '#1b1f27', '#5e6573', '#dadde3', '#005bbb', '#e3edf9', '#e56a54'],   // about
+      ['#0a1a33', '#10264a', '#eef3fa', '#a9b8cc', '#2a4168', '#ffc72c', '#1a3a68', '#ffc72c'],   // research
+      ['#eaf2fb', '#ffffff', '#10213a', '#4f6077', '#c6d5e8', '#005bbb', '#d6e6f7', '#e56a54'],   // news
+      ['#f6f7f9', '#ffffff', '#1b1f27', '#5e6573', '#dadde3', '#005bbb', '#e3edf9', '#e56a54'],   // before UB
+      ['#005bbb', '#0a4e9e', '#ffffff', '#cfe0f5', '#3f80cc', '#ffffff', '#2f74c4', '#ffc72c'],   // contact
+    ],
+    dark: [
+      ['#11141a', '#181c24', '#e8ebf0', '#a0a7b4', '#2a303b', '#5ea2ee', '#18263a', '#f08a74'],
+      ['#071328', '#0e2140', '#eef3fa', '#a9b8cc', '#243a5e', '#ffc72c', '#163257', '#ffc72c'],
+      ['#0f1a2a', '#15233a', '#e6eef8', '#9fb0c6', '#26364d', '#7ab4f2', '#1a2d48', '#f08a74'],
+      ['#11141a', '#181c24', '#e8ebf0', '#a0a7b4', '#2a303b', '#5ea2ee', '#18263a', '#f08a74'],
+      ['#003e82', '#0a4b94', '#ffffff', '#c4d8f2', '#2e68ad', '#ffffff', '#1f5ea8', '#ffc72c'],
+    ],
+  };
+  const scenes = ['about', 'research', 'news', 'before-ub', 'contact'].map(id => document.getElementById(id));
+  const darkMq = matchMedia('(prefers-color-scheme: dark)');
+  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const mixHex = (a, b, t) => { const A = hex(a), B = hex(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
+  const themeMeta = $('meta[name="theme-color"]');
+  let palKey = '';
+  function applyPalette() {
+    const set = PAL[(document.documentElement.dataset.theme || (darkMq.matches ? 'dark' : 'light'))];
+    let cur = set[0].slice();
+    for (let i = 1; i < scenes.length; i++) {
+      const t = smooth((0.62 * (H || innerHeight) - scenes[i].getBoundingClientRect().top) / (0.32 * (H || innerHeight)));
+      if (t <= 0) break;
+      cur = cur.map((c, k) => mixHex(c, set[i][k], t));
+    }
+    const key = cur.join();
+    if (key === palKey) return;
+    palKey = key;
+    const st = document.documentElement.style;
+    KEYS.forEach((k, i) => { st.setProperty('--' + (k === 'soft' ? 'blue-soft' : k), cur[i]); C[k] = cur[i]; });
+    themeMeta?.setAttribute('content', cur[0]);
   }
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height, top: r.top, bottom: r.bottom, left: r.left }; };
 
@@ -100,10 +140,10 @@
     { si: 1, k: 0 }, { si: 1, k: 1 }, { si: 1, k: 2 }, { si: 1, k: 3 },
   ];
   const SHELL = [
-    { hero: 0.40, ring: 0.21, tilt: 70, rot: -24, speed: 0.62, n: 2 },
-    { hero: 0.56, ring: 0.28, tilt: 72, rot: 30, speed: -0.4, n: 4 },
+    { hero: 0.40, ring: 0.385, tilt: 70, rot: -24, speed: 0.62, n: 2 },
+    { hero: 0.56, ring: 0.435, tilt: 72, rot: 30, speed: -0.4, n: 4 },
   ];
-  const RINGS = [0.21, 0.28, 0.35, 0.42, 0.49];
+  const RINGS = [0.385, 0.435, 0.475, 0.51, 0.54];
   let spin = 1.4;                                       // time-based angle (the only clock)
   const speed = new Spring(1, { damping: 1, response: 0.6 });
 
@@ -133,6 +173,7 @@
     ctx.clearRect(0, 0, W, H);
     const { q1, q2, q4, cx, cy, s, N, D, tx, tipY, Rl } = F;
     const atomA = 1 - win(q2, 0, 0.55);                          // the big atom fades as electrons leave
+    const transit = W < 860 ? 1 - 0.75 * Math.sin(Math.PI * clamp(q1)) : 1;   // phones: dim while it crosses text
 
     // --- five layers (scene 2): the outer three rings open out of the second orbit
     if (q1 > 0.02 && atomA > 0.01) {
@@ -176,12 +217,24 @@
         if (i <= 2 && q2 > 0) return;                         // the travellers are drawn later
         if ((p.z < 0) === front) return;
         ctx.globalAlpha = (p.z < 0 ? 0.45 : 1) * atomA;
-        ctx.fillStyle = C.blue;
+        ctx.fillStyle = C.spark;
         ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(2.2, (s / 95) + p.z * 1.3), 0, Math.PI * 2); ctx.fill();
       });
     };
 
+    const tileA = 1 - win(q1, 0, 0.3);
+    if (tileA > 0.01) {
+      const t = tile.getBoundingClientRect();
+      const nr0 = s * 0.28, ax = t.left + 6, ay = t.bottom - 6;
+      const ang = Math.atan2(ay - cy, ax - cx);
+      ctx.globalAlpha = 0.5 * tileA; ctx.strokeStyle = C.blue; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(cx + Math.cos(ang) * (nr0 + 6), cy + Math.sin(ang) * (nr0 + 6)); ctx.stroke();
+      ctx.setLineDash([]);
+    }
     if (atomA > 0.01) {
+      ctx.save(); ctx.globalAlpha = 1;
+      const _ga = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'globalAlpha');
+      Object.defineProperty(ctx, 'globalAlpha', { configurable: true, get() { return _ga.get.call(this); }, set(v) { _ga.set.call(this, v * transit); } });
       paths(false); electrons(false);
       // nucleus: headshot cross-fades into the SATE recorder
       const nr = s * 0.28 * (1 - 0.25 * q2);
@@ -199,15 +252,6 @@
         }
         ctx.restore();
       }
-      const devA = win(q1, 0.3, 0.8) * atomA;
-      if (devA > 0.01 && device.complete && device.naturalWidth) {
-        const dh = s * 0.6 * (1 - 0.25 * q2), dw = dh * device.naturalWidth / device.naturalHeight;
-        const lift = (1 - win(q1, 0.3, 1)) * s * 0.12;
-        ctx.save(); ctx.globalAlpha = devA;
-        ctx.translate(cx, cy + lift); ctx.rotate((1 - win(q1, 0.3, 1)) * -0.18);
-        ctx.drawImage(device, -dw * 0.46, -dh * 0.52, dw, dh);
-        ctx.restore();
-      }
       // ring 1 closes, ring 2 reaches about half: where SATE is today
       if (q1 > 0.5) {
         const r1 = s * RINGS[0] * (1 - 0.25 * q2), r2 = s * RINGS[1] * (1 - 0.25 * q2);
@@ -219,6 +263,16 @@
         ctx.lineCap = 'butt';
       }
       paths(true); electrons(true);
+      const devA = win(q1, 0.3, 0.8) * atomA;
+      if (devA > 0.01 && device.complete && device.naturalWidth) {
+        const dh = s * 0.6 * (1 - 0.25 * q2), dw = dh * device.naturalWidth / device.naturalHeight;
+        const lift = (1 - win(q1, 0.3, 1)) * s * 0.12;
+        ctx.save(); ctx.globalAlpha = devA;
+        ctx.translate(cx, cy + lift); ctx.rotate((1 - win(q1, 0.3, 1)) * -0.18);
+        ctx.drawImage(device, -dw * 0.5, -dh * 0.5, dw, dh);
+        ctx.restore();
+      }
+      delete ctx.globalAlpha; ctx.restore();
     }
 
     // --- scene 3 and 4: three travellers leave the atom
@@ -251,7 +305,7 @@
         });
       } else stops.forEach(h => h.classList.remove('is-lit'));
 
-      ctx.fillStyle = C.blue; ctx.globalAlpha = 1;
+      ctx.fillStyle = C.spark; ctx.globalAlpha = 1;
       for (const p of [p0, p1]) { ctx.beginPath(); ctx.arc(p.x, p.y, er, 0, Math.PI * 2); ctx.fill(); }
       // the rider glows a little so the eye can follow it
       const fadeRider = q4 > 0.6 ? 1 - win(q4, 0.6, 0.9) : 1;
@@ -291,10 +345,13 @@
   /* DOM side of the film: text and media, also pure functions of scroll */
   const restTop = el => el.getBoundingClientRect().top - (el._ty || 0);   // measure without our own offset
   function stage(F) {
+    applyPalette();
     // scene 1 text steps aside as the atom leaves
     const out = F.q1;
     aboutText.style.transform = `translate3d(0, ${(-out * 90).toFixed(1)}px, 0)`;
     aboutText.style.opacity = String(1 - win(out, 0, 0.55));
+    tile.style.opacity = String(1 - win(out, 0, 0.3));
+    tile.style.transform = `translate3d(0, ${(-out * 40).toFixed(1)}px, 0)`;
     // every [data-in] arrives while it climbs from the bottom to 78% of the screen
     for (const el of ins) {
       const p = smooth((H * 0.98 - restTop(el)) / (H * 0.2));
