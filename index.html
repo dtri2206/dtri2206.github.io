@@ -13,10 +13,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..600;1,8..60,400&display=swap">
+  <link rel="preload" as="image" href="assets/img/sate-device-hand.webp">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
+
+  <!-- The film: one canvas behind the page. The carbon atom travels through every scene. -->
+  <canvas class="film" id="film" aria-hidden="true"></canvas>
 
   <header class="top">
     <div class="w top__inner">
@@ -28,14 +32,15 @@
         <a href="#contact" data-section="contact">Contact</a>
       </nav>
     </div>
+    <div class="top__progress" aria-hidden="true"><span id="progress"></span></div>
   </header>
 
   <main id="main">
-    <!-- ABOUT -->
+    <!-- SCENE 1: the nucleus -->
     <section class="about" id="about">
       <div class="w about__grid">
-        <div class="about__text">
-          <h1 class="about__name">Tri Nguyen</h1>
+        <div class="about__text" data-out>
+          <h1 class="about__name"><span class="ln"><span>Tri</span></span> <span class="ln"><span>Nguyen</span></span></h1>
           <p class="about__vn">Nguyễn Đức Trí</p>
           <p class="about__role"><a href="https://cse.buffalo.edu/~wenyaoxu/esc.html">Embedded Sensing and Computing (ESC) Group</a><br>B.S. Computer Science, University at Buffalo</p>
           <div class="about__bio">
@@ -47,72 +52,59 @@
             <li><a href="https://github.com/dtri2206" target="_blank" rel="noopener">GitHub</a></li>
           </ul>
         </div>
-        <div class="orbit" id="orbit">
-          <canvas class="orbit__back" aria-hidden="true"></canvas>
-          <figure class="headshot">
-            <img src="assets/img/headshot.jpg" width="800" height="800" alt="Tri Nguyen" onerror="this.parentElement.classList.add('is-empty'); this.remove();">
-            <span class="headshot__empty" aria-hidden="true">TN</span>
-          </figure>
-          <canvas class="orbit__front" aria-hidden="true"></canvas>
+        <div class="slot slot--atom" id="slot-atom">
+          <img class="sr-only" src="assets/img/headshot.jpg" alt="Tri Nguyen" onerror="this.remove()">
         </div>
       </div>
+      <p class="cue" aria-hidden="true"><span></span>Scroll</p>
     </section>
 
-    <!-- RESEARCH -->
+    <!-- SCENE 2: orbits flatten into SATE's five layers -->
     <section class="sec" id="research">
       <div class="w sec__grid">
-        <h2 class="sec__name">Research</h2>
+        <h2 class="sec__name" data-in>Research</h2>
         <div class="sec__body">
           <div class="sate">
             <div class="sate__text">
-              <p class="lead">I work on SATE. SATE starts from one idea: a small recorder that can understand a person from sound alone.</p>
-              <p>Today it does the first step, understanding how one child uses English, and turns a conversation into a transcript and language measures. The next steps are about hearing more: more languages, and more of the everyday sounds around a person.</p>
-              <p><a class="textlink" href="https://sate.agency/" target="_blank" rel="noopener">sate.agency</a></p>
+              <p class="lead" data-in>I work on SATE. SATE starts from one idea: a small recorder that can understand a person from sound alone.</p>
+              <p data-in>Today it does the first step, understanding how one child uses English, and turns a conversation into a transcript and language measures. The next steps are about hearing more: more languages, and more of the everyday sounds around a person.</p>
+              <p data-in><a class="textlink" href="https://sate.agency/" target="_blank" rel="noopener">sate.agency</a></p>
             </div>
-            <figure class="layers" id="layers" aria-label="The SATE recorder inside five rings. The first ring is complete, the second is in progress, the outer three are ahead.">
-              <svg class="layers__rings" viewBox="-130 -130 260 260" aria-hidden="true">
-                <circle class="ring ring--far" r="126"/>
-                <circle class="ring ring--far" r="108"/>
-                <circle class="ring ring--far" r="90"/>
-                <circle class="ring ring--track" r="72"/>
-                <circle class="ring ring--two" r="72" pathLength="100"/>
-                <circle class="ring ring--one" r="54" pathLength="100"/>
-              </svg>
-              <img class="layers__device" src="assets/img/sate-device-hand.webp" width="1282" height="1744" loading="lazy" alt="">
-            </figure>
+            <div class="slot slot--layers" id="slot-layers" role="img" aria-label="The SATE recorder inside five rings. The first ring is complete, the second is in progress, the outer three are ahead."></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- NEWS -->
+    <!-- SCENE 3: two electrons land as the two dates -->
     <section class="sec" id="news">
       <div class="w sec__grid">
-        <h2 class="sec__name">News</h2>
+        <h2 class="sec__name" data-in>News</h2>
         <div class="sec__body">
           <dl class="news">
-            <div><dt>Fall 2026</dt><dd>Started my B.S. in Computer Science at the University at Buffalo.</dd></div>
-            <div><dt>Sep 2026</dt><dd>Joined the ESC Group.</dd></div>
+            <div data-in><span class="dot" data-dot></span><dt>Fall 2026</dt><dd>Started my B.S. in Computer Science at the University at Buffalo.</dd></div>
+            <div data-in><span class="dot" data-dot></span><dt>Sep 2026</dt><dd>Joined the ESC Group.</dd></div>
           </dl>
         </div>
       </div>
     </section>
 
-    <!-- BEFORE UB -->
+    <!-- SCENE 4: one electron pulls a thread through Before UB -->
     <section class="sec" id="before-ub">
       <div class="w sec__grid">
-        <h2 class="sec__name">Before UB<span>High School for the Gifted, VNU-HCM</span></h2>
-        <div class="sec__body">
+        <h2 class="sec__name" data-in>Before UB<span>High School for the Gifted, VNU-HCM</span></h2>
+        <div class="sec__body thread-host">
+          <span class="rail" id="rail" aria-hidden="true"></span>
           <article class="work">
-            <h3>Listening Station, 2025</h3>
-            <p>A Vietnamese voice assistant for people who come to the Nụ Cười meal program of Bông Sen Charity in Ho Chi Minh City. It records and transcribes a conversation, finds urgent needs like medical or financial aid, and organizes the case for the volunteers. I built it with Google Speech-to-Text and Text-to-Speech after volunteering in the kitchen, where many people had problems much bigger than hunger.</p>
-            <div class="video wide">
+            <h3 data-stop>Listening Station, 2025</h3>
+            <p data-in>A Vietnamese voice assistant for people who come to the Nụ Cười meal program of Bông Sen Charity in Ho Chi Minh City. It records and transcribes a conversation, finds urgent needs like medical or financial aid, and organizes the case for the volunteers. I built it with Google Speech-to-Text and Text-to-Speech after volunteering in the kitchen, where many people had problems much bigger than hunger.</p>
+            <div class="video wide" id="iris">
               <video id="ls-video" preload="none" playsinline poster="assets/img/listening-station-poster.jpg" width="1920" height="1080">
                 <source src="assets/video/listening-station.mp4" type="video/mp4">
               </video>
               <button class="video__play" id="ls-play" type="button"><span class="video__icon" aria-hidden="true"></span>Play the demo (4:31)</button>
             </div>
-            <div class="photos photos--4 wide" data-group="volunteer">
+            <div class="photos photos--4 wide" data-group="volunteer" data-rise>
               <button class="shot" data-zoom><img src="assets/img/volunteer-2.jpg" width="1200" height="900" loading="lazy" alt="Cooking rice at Quán cơm Nụ Cười 9"></button>
               <button class="shot" data-zoom><img src="assets/img/volunteer-1.jpg" width="1160" height="1276" loading="lazy" alt="Handing out meals on the street"></button>
               <button class="shot" data-zoom><img src="assets/img/volunteer-9.jpg" width="2000" height="1500" loading="lazy" alt="Lunch service at the community kitchen"></button>
@@ -121,24 +113,24 @@
           </article>
 
           <article class="work">
-            <h3>Awards</h3>
-            <p class="hint">Select an award to see the certificate.</p>
+            <h3 data-stop>Awards</h3>
+            <p class="hint" data-in>Select an award to see the certificate.</p>
             <ul class="awards" data-group="awards">
-              <li><button class="award" data-zoom><span class="award__year">2025</span><span class="award__title">First Prize, BME Innovation Competition</span><img src="assets/img/award-bmei.jpg" width="1467" height="965" loading="lazy" alt="BME Innovation Competition 2025, first prize certificate"></button></li>
-              <li><button class="award" data-zoom><span class="award__year">2025</span><span class="award__title">Proficiency Award, Australian Mathematics Competition, Senior Division</span><img src="assets/img/award-amc.jpg" width="1166" height="1600" loading="lazy" alt="Australian Mathematics Competition 2025, proficiency award"></button></li>
-              <li><button class="award" data-zoom><span class="award__year">2022–23</span><span class="award__title">Third Place, Ho Chi Minh City Excellent Student Award</span><img src="assets/img/award-hcmc-third.jpg" width="1600" height="1200" loading="lazy" alt="Third place plaque, Ho Chi Minh City Excellent Student Award"></button></li>
-              <li><button class="award" data-zoom><span class="award__year">2022–25</span><span class="award__title">Excellent Student for three years, High School for the Gifted, VNU-HCM and Lê Quý Đôn Secondary School</span><img src="assets/img/award-excellent-2024.jpg" width="1600" height="1121" loading="lazy" alt="Excellent Student certificate, 2024-2025"></button></li>
-              <li><button class="award" data-zoom><span class="award__year">2022–23</span><span class="award__title">Academic Excellence, District Math Competition</span><img src="assets/img/award-district-math.jpg" width="1600" height="1093" loading="lazy" alt="District Math Competition certificate"></button></li>
-              <li><button class="award" data-zoom><span class="award__year">2022–23</span><span class="award__title">Consolation Prize, District Casio Competition</span><img src="assets/img/award-casio.jpg" width="1600" height="1105" loading="lazy" alt="District Casio Competition certificate"></button></li>
-              <li><button class="award" data-zoom><span class="award__year">2025</span><span class="award__title">Volunteer Leader, Bông Sen Charity, Nụ Cười meal program</span><img src="assets/img/award-volunteer-leader.jpg" width="1600" height="1084" loading="lazy" alt="Volunteer leader certificate from Bông Sen Charity"></button></li>
-              <li><button class="award" data-zoom><span class="award__year"></span><span class="award__title">Co-founder, The Enten Project</span><img src="assets/img/award-enten.jpg" width="1472" height="1040" loading="lazy" alt="Co-founder certificate, The Enten Project"></button></li>
+              <li data-in><button class="award" data-zoom><span class="award__year">2025</span><span class="award__title">First Prize, BME Innovation Competition</span><img src="assets/img/award-bmei.jpg" width="1467" height="965" loading="lazy" alt="BME Innovation Competition 2025, first prize certificate"></button></li>
+              <li data-in><button class="award" data-zoom><span class="award__year">2025</span><span class="award__title">Proficiency Award, Australian Mathematics Competition, Senior Division</span><img src="assets/img/award-amc.jpg" width="1166" height="1600" loading="lazy" alt="Australian Mathematics Competition 2025, proficiency award"></button></li>
+              <li data-in><button class="award" data-zoom><span class="award__year">2022–23</span><span class="award__title">Third Place, Ho Chi Minh City Excellent Student Award</span><img src="assets/img/award-hcmc-third.jpg" width="1600" height="1200" loading="lazy" alt="Third place plaque, Ho Chi Minh City Excellent Student Award"></button></li>
+              <li data-in><button class="award" data-zoom><span class="award__year">2022–25</span><span class="award__title">Excellent Student for three years, High School for the Gifted, VNU-HCM and Lê Quý Đôn Secondary School</span><img src="assets/img/award-excellent-2024.jpg" width="1600" height="1121" loading="lazy" alt="Excellent Student certificate, 2024-2025"></button></li>
+              <li data-in><button class="award" data-zoom><span class="award__year">2022–23</span><span class="award__title">Academic Excellence, District Math Competition</span><img src="assets/img/award-district-math.jpg" width="1600" height="1093" loading="lazy" alt="District Math Competition certificate"></button></li>
+              <li data-in><button class="award" data-zoom><span class="award__year">2022–23</span><span class="award__title">Consolation Prize, District Casio Competition</span><img src="assets/img/award-casio.jpg" width="1600" height="1105" loading="lazy" alt="District Casio Competition certificate"></button></li>
+              <li data-in><button class="award" data-zoom><span class="award__year">2025</span><span class="award__title">Volunteer Leader, Bông Sen Charity, Nụ Cười meal program</span><img src="assets/img/award-volunteer-leader.jpg" width="1600" height="1084" loading="lazy" alt="Volunteer leader certificate from Bông Sen Charity"></button></li>
+              <li data-in><button class="award" data-zoom><span class="award__year"></span><span class="award__title">Co-founder, The Enten Project</span><img src="assets/img/award-enten.jpg" width="1472" height="1040" loading="lazy" alt="Co-founder certificate, The Enten Project"></button></li>
             </ul>
           </article>
 
           <article class="work">
-            <h3>Outside the lab</h3>
-            <p>I play soccer with my friends (our class got third place at the Năng Khiếu Championship 2025), I have kept ants for three years, and I play billiards, where I got a bronze medal at a club tournament.</p>
-            <div class="photos photos--3 wide" data-group="outside">
+            <h3 data-stop>Outside the lab</h3>
+            <p data-in>I play soccer with my friends (our class got third place at the Năng Khiếu Championship 2025), I have kept ants for three years, and I play billiards, where I got a bronze medal at a club tournament.</p>
+            <div class="photos photos--3 wide" data-group="outside" data-rise>
               <button class="shot" data-zoom><img src="assets/img/soccer-team.jpg" width="1400" height="1050" loading="lazy" alt="Our class team with the third place trophy"></button>
               <button class="shot" data-zoom><img src="assets/img/ants.jpg" width="933" height="1400" loading="lazy" alt="Taking care of an ant nest"></button>
               <button class="shot" data-zoom><img src="assets/img/billiards-medal.jpg" width="1050" height="1400" loading="lazy" alt="Holding the bronze medal at the billiards club"></button>
@@ -148,13 +140,16 @@
       </div>
     </section>
 
-    <!-- CONTACT -->
+    <!-- SCENE 5: the atom forms again beside the email -->
     <section class="sec sec--last" id="contact">
       <div class="w sec__grid">
-        <h2 class="sec__name">Contact</h2>
-        <div class="sec__body">
-          <p class="mail"><a href="mailto:ductring@buffalo.edu" id="email">ductring@buffalo.edu</a> <button class="copy" id="copy" type="button">Copy email</button></p>
-          <p class="contact__more"><a class="textlink" href="https://cse.buffalo.edu/~wenyaoxu/esc.html">ESC Group, University at Buffalo</a><br><a class="textlink" href="https://github.com/dtri2206" target="_blank" rel="noopener">github.com/dtri2206</a></p>
+        <h2 class="sec__name" data-in>Contact</h2>
+        <div class="sec__body contact">
+          <div class="contact__text">
+            <p class="mail" data-in><a href="mailto:ductring@buffalo.edu" id="email">ductring@buffalo.edu</a> <button class="copy" id="copy" type="button">Copy email</button></p>
+            <p class="contact__more" data-in><a class="textlink" href="https://cse.buffalo.edu/~wenyaoxu/esc.html">ESC Group, University at Buffalo</a><br><a class="textlink" href="https://github.com/dtri2206" target="_blank" rel="noopener">github.com/dtri2206</a></p>
+          </div>
+          <div class="slot slot--mini" id="slot-mini" aria-hidden="true"></div>
         </div>
       </div>
     </section>
@@ -174,6 +169,7 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
   <script src="script.js" defer></script>
 </body>
 </html>

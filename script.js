@@ -1,7 +1,12 @@
-/* Tri Nguyen — site interactions.
- * One ambient motion only: the carbon orbit around the headshot (it tilts away as you scroll).
- * Everything else answers an action: the SATE rings draw once when reached, the certificate
- * follows the pointer, photos open from where they sit. Springs use Apple's damping/response. */
+/* Tri Nguyen — a scroll film.
+ * One carbon atom on a fixed canvas travels through five scenes:
+ *   1 nucleus (headshot) with 6 electrons on two tilted orbits
+ *   2 the orbits turn face-on and become SATE's five layers around the recorder
+ *   3 two electrons land as the two dates in News
+ *   4 one electron pulls a thread down Before UB, lighting each heading it passes
+ *   5 the atom forms again, small, beside the email
+ * Rule: the film is a pure function of scroll position (compose -> draw). It plays backwards
+ * for free and survives jumps. Only the electrons' spin is time-based. */
 (() => {
   'use strict';
   document.documentElement.classList.add('js');
@@ -10,6 +15,9 @@
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const smooth = t => { t = clamp(t); return t * t * (3 - 2 * t); };      // peak speed 1.5x
+  const win = (p, a, b) => smooth((p - a) / (b - a));
   const cssVar = (el, name) => getComputedStyle(el).getPropertyValue(name).trim();
 
   /* ---------------- Spring ---------------- */
@@ -19,10 +27,7 @@
       this.config(damping, response);
       this.subs = []; this.raf = 0; this.last = 0; this.rest = null;
     }
-    config(damping, response) {
-      this.k = Math.pow((2 * Math.PI) / response, 2);
-      this.c = (4 * Math.PI * damping) / response;
-    }
+    config(damping, response) { this.k = Math.pow((2 * Math.PI) / response, 2); this.c = (4 * Math.PI * damping) / response; }
     on(fn) { this.subs.push(fn); return this; }
     emit() { for (const fn of this.subs) fn(this.x); }
     jump(x) { this.stop(); this.x = this.target = x; this.v = 0; this.emit(); }
@@ -35,132 +40,313 @@
       if (!this.raf) { this.last = performance.now(); this.raf = requestAnimationFrame(t => this.tick(t)); }
     }
     tick(now) {
-      let dt = Math.min((now - this.last) / 1000, 1 / 30);
-      this.last = now;
-      while (dt > 0) {
-        const s = Math.min(1 / 240, dt);
-        const a = -this.k * (this.x - this.target) - this.c * this.v;
-        this.v += a * s; this.x += this.v * s; dt -= s;
-      }
-      if (Math.abs(this.x - this.target) < 0.01 && Math.abs(this.v) < 0.5) {
-        this.x = this.target; this.v = 0; this.raf = 0; this.emit(); this.rest?.(); return;
-      }
-      this.emit();
-      this.raf = requestAnimationFrame(t => this.tick(t));
+      let dt = Math.min((now - this.last) / 1000, 1 / 30); this.last = now;
+      while (dt > 0) { const s = Math.min(1 / 240, dt); const a = -this.k * (this.x - this.target) - this.c * this.v; this.v += a * s; this.x += this.v * s; dt -= s; }
+      if (Math.abs(this.x - this.target) < 0.01 && Math.abs(this.v) < 0.5) { this.x = this.target; this.v = 0; this.raf = 0; this.emit(); this.rest?.(); return; }
+      this.emit(); this.raf = requestAnimationFrame(t => this.tick(t));
     }
   }
   const project = (v, d = 0.998) => (v / 1000) * d / (1 - d);
   const rubberband = (over, dim, c = 0.55) => (over * dim * c) / (dim + c * Math.abs(over));
 
+  /* ---------------- Smooth wheel on laptops only (phones keep native scroll) ---------------- */
+  let lenis = null;
+  if (window.Lenis && finePointer.matches && !reduceMotion.matches) {
+    lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.85, smoothWheel: true });
+    window.__lenis = lenis;
+  }
+
   /* ---------------- Toast ---------------- */
   const toast = $('#toast'); let toastTimer;
-  const showToast = (msg) => {
-    toast.textContent = msg; toast.classList.add('is-on');
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('is-on'), 1800);
-  };
+  const showToast = (msg) => { toast.textContent = msg; toast.classList.add('is-on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('is-on'), 1800); };
 
-  /* ---------------- Anchor links: offset for the sticky bar ---------------- */
+  /* ---------------- Anchor links ---------------- */
   document.addEventListener('click', e => {
     const a = e.target.closest('a[href^="#"]'); if (!a) return;
     const el = document.getElementById(a.getAttribute('href').slice(1)); if (!el) return;
     e.preventDefault();
-    const y = el.id === 'about' ? 0 : el.getBoundingClientRect().top + scrollY - 70;
-    scrollTo({ top: Math.max(0, y), behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+    const y = el.id === 'about' ? 0 : el.getBoundingClientRect().top + scrollY - 72;
+    if (lenis) lenis.scrollTo(Math.max(0, y), { duration: 1.6 });
+    else scrollTo({ top: Math.max(0, y), behavior: reduceMotion.matches ? 'auto' : 'smooth' });
     history.replaceState(null, '', '#' + el.id);
   });
 
-  /* ---------------- Active section in the bar ---------------- */
-  (() => {
-    const links = $$('.top__nav a');
-    const sections = links.map(a => document.getElementById(a.dataset.section));
-    const update = () => {
-      let cur = null;
-      for (const s of sections) if (s.getBoundingClientRect().top <= innerHeight * 0.4) cur = s.id;
-      if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) cur = 'contact';
-      links.forEach(a => a.classList.toggle('is-active', a.dataset.section === cur));
-    };
-    addEventListener('scroll', update, { passive: true });
-    update();
-  })();
+  /* ================= THE FILM ================= */
+  const canvas = $('#film'), ctx = canvas.getContext('2d');
+  const slotA = $('#slot-atom'), slotB = $('#slot-layers'), slotD = $('#slot-mini'), rail = $('#rail');
+  const dots = $$('[data-dot]'), stops = $$('[data-stop]');
+  const aboutText = $('.about__text'), iris = $('#iris'), bar = $('#progress');
+  const ins = $$('[data-in]'), rises = $$('[data-rise]');
+  const navLinks = $$('.top__nav a'), navSecs = navLinks.map(a => document.getElementById(a.dataset.section));
+  let W = 0, H = 0, dpr = 1, C = {};
 
-  /* ---------------- Carbon orbit: 6 electrons around the headshot ---------------- */
-  (() => {
-    const box = $('#orbit'); if (!box) return;
-    const back = $('.orbit__back', box), front = $('.orbit__front', box);
-    const bctx = back.getContext('2d'), fctx = front.getContext('2d');
-    let W = 0, H = 0, dpr = 1, blue = '#005bbb', ink = '#1b1f27', visible = true, raf = 0, t = 1.2, last = performance.now();
-    // carbon: 2 electrons on the inner shell, 4 on the outer shell (radii as a share of the box width)
-    const shells = [
-      { r: 0.40, n: 2, tilt: 70, rotZ: -24, speed: 0.6 },
-      { r: 0.56, n: 4, tilt: 72, rotZ: 30, speed: -0.38 },
-    ];
-    const speed = new Spring(1, { damping: 1, response: 0.6 });
-    const rad = d => d * Math.PI / 180;
-    function size() {
-      dpr = Math.min(devicePixelRatio || 1, 2);
-      W = back.clientWidth; H = back.clientHeight;
-      for (const c of [back, front]) { c.width = W * dpr; c.height = H * dpr; c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0); }
-      blue = cssVar(box, '--blue') || blue; ink = cssVar(box, '--ink') || ink;
+  const head = new Image(); let headOK = false;
+  head.onload = () => { headOK = true; }; head.src = 'assets/img/headshot.jpg';
+  const device = new Image(); device.src = 'assets/img/sate-device-hand.webp';
+
+  function size() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const root = document.documentElement;
+    C = { blue: cssVar(root, '--blue'), ink: cssVar(root, '--ink'), rule: cssVar(root, '--rule'), soft: cssVar(root, '--blue-soft'), paper: cssVar(root, '--paper') };
+  }
+  const box = el => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height, top: r.top, bottom: r.bottom, left: r.left }; };
+
+  // electrons: carbon has 2 on the inner shell and 4 on the outer shell
+  const E = [
+    { si: 0, k: 0 }, { si: 0, k: 1 },
+    { si: 1, k: 0 }, { si: 1, k: 1 }, { si: 1, k: 2 }, { si: 1, k: 3 },
+  ];
+  const SHELL = [
+    { hero: 0.40, ring: 0.21, tilt: 70, rot: -24, speed: 0.62, n: 2 },
+    { hero: 0.56, ring: 0.28, tilt: 72, rot: 30, speed: -0.4, n: 4 },
+  ];
+  const RINGS = [0.21, 0.28, 0.35, 0.42, 0.49];
+  let spin = 1.4;                                       // time-based angle (the only clock)
+  const speed = new Spring(1, { damping: 1, response: 0.6 });
+
+  function orbitPoint(cx, cy, R, a, tiltDeg, rotDeg) {
+    const x0 = R * Math.cos(a), y0 = R * Math.sin(a);
+    const tl = tiltDeg * Math.PI / 180, rz = rotDeg * Math.PI / 180;
+    const y1 = y0 * Math.cos(tl), z = y0 * Math.sin(tl);
+    return { x: cx + x0 * Math.cos(rz) - y1 * Math.sin(rz), y: cy + x0 * Math.sin(rz) + y1 * Math.cos(rz), z: z / (R || 1) };
+  }
+
+  /* compose(): everything the canvas needs, from the scroll position alone */
+  function compose() {
+    const A = box(slotA), B = box(slotB), D = box(slotD), Rl = box(rail);
+    const N = dots.map(box);
+    const q1 = smooth((1.35 * H - B.y) / (0.85 * H));          // hero -> SATE layers
+    const q2 = smooth((0.98 * H - N[0].y) / (0.45 * H));       // layers -> the two dates
+    const q4 = smooth((1.08 * H - D.y) / (0.55 * H));          // thread -> small atom
+    // the atom's place and size: glides from the hero slot to the layers slot
+    const cx = lerp(A.x, B.x, q1), cy = lerp(A.y, B.y, q1), s = lerp(A.w, B.w, q1);
+    // thread along the rail: from the second date down to the reading line (0.6 of the screen)
+    const tx = Rl.x;
+    const tipY = clamp(0.6 * H, N[1].y, Rl.bottom);
+    return { A, B, D, N, Rl, q1, q2, q4, cx, cy, s, tx, tipY };
+  }
+
+  function draw(F) {
+    ctx.clearRect(0, 0, W, H);
+    const { q1, q2, q4, cx, cy, s, N, D, tx, tipY, Rl } = F;
+    const atomA = 1 - win(q2, 0, 0.55);                          // the big atom fades as electrons leave
+
+    // --- five layers (scene 2): the outer three rings open out of the second orbit
+    if (q1 > 0.02 && atomA > 0.01) {
+      const k = 1 - 0.25 * q2;
+      ctx.lineWidth = 1;
+      for (let i = 2; i < 5; i++) {
+        const r = s * lerp(RINGS[1], RINGS[i], win(q1, 0.35, 1)) * k;
+        ctx.globalAlpha = win(q1, 0.35, 0.9) * (0.9 - (i - 2) * 0.22) * atomA;
+        ctx.strokeStyle = C.rule; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+      }
     }
-    function point(R, a, tiltDeg, rotDeg) {
-      const x0 = R * Math.cos(a), y0 = R * Math.sin(a);
-      const tl = rad(tiltDeg), rz = rad(rotDeg);
-      const y1 = y0 * Math.cos(tl), z = y0 * Math.sin(tl);
-      return { x: W / 2 + x0 * Math.cos(rz) - y1 * Math.sin(rz), y: H / 2 + x0 * Math.sin(rz) + y1 * Math.cos(rz), z };
-    }
-    function draw() {
-      bctx.clearRect(0, 0, W, H); fctx.clearRect(0, 0, W, H);
-      // leaving the top of the page tilts the orbits flatter and fades them a little
-      const h = clamp(scrollY / Math.max(1, box.getBoundingClientRect().bottom + scrollY));
-      const w = box.clientWidth;
-      shells.forEach((sh, si) => {
-        const R = w * sh.r;
-        const tilt = sh.tilt + h * 14 * (si ? 1 : -1), rot = sh.rotZ + h * 18 * (si ? 1 : -1);
-        const N = 120;
-        let prev = point(R, 0, tilt, rot);
-        for (let i = 1; i <= N; i++) {
-          const q = point(R, (i / N) * Math.PI * 2, tilt, rot);
+
+    // --- electron positions in the atom
+    const pos = E.map((e, i) => {
+      const sh = SHELL[e.si];
+      const R = s * lerp(sh.hero, sh.ring, q1) * (1 - 0.25 * q2);
+      const tilt = lerp(sh.tilt, 0, q1), rot = lerp(sh.rot, 0, q1);
+      const a = spin * sh.speed + (e.k / sh.n) * Math.PI * 2 + e.si * 0.7;
+      return orbitPoint(cx, cy, R, a, tilt, rot);
+    });
+
+    // --- orbit paths (become rings 1 and 2 when face-on); split into behind / in front
+    const paths = (front) => {
+      SHELL.forEach((sh) => {
+        const R = s * lerp(sh.hero, sh.ring, q1) * (1 - 0.25 * q2);
+        const tilt = lerp(sh.tilt, 0, q1), rot = lerp(sh.rot, 0, q1);
+        let prev = orbitPoint(cx, cy, R, 0, tilt, rot);
+        ctx.strokeStyle = C.ink; ctx.lineWidth = 1;
+        for (let i = 1; i <= 96; i++) {
+          const q = orbitPoint(cx, cy, R, (i / 96) * Math.PI * 2, tilt, rot);
           const behind = prev.z + q.z < 0;
-          const ctx = behind ? bctx : fctx;
-          ctx.globalAlpha = (behind ? 0.16 : 0.34) * (1 - h * 0.5);
-          ctx.strokeStyle = ink; ctx.lineWidth = 1;
+          if (behind !== !front) { prev = q; continue; }
+          ctx.globalAlpha = (behind ? 0.14 : 0.3) * atomA;
           ctx.beginPath(); ctx.moveTo(prev.x, prev.y); ctx.lineTo(q.x, q.y); ctx.stroke();
           prev = q;
         }
-        for (let k = 0; k < sh.n; k++) {
-          const a = t * sh.speed + (k / sh.n) * Math.PI * 2 + si * 0.7;
-          const e = point(R, a, tilt, rot);
-          const depth = e.z / R;
-          const behind = e.z < 0;
-          const ctx = behind ? bctx : fctx;
-          ctx.globalAlpha = behind ? 0.45 : 1;
-          ctx.fillStyle = blue;
-          ctx.beginPath(); ctx.arc(e.x, e.y, Math.max(2.2, 4.4 + depth * 1.4), 0, Math.PI * 2); ctx.fill();
-        }
       });
-      bctx.globalAlpha = fctx.globalAlpha = 1;
-    }
-    function loop(now) {
-      t += Math.min((now - last) / 1000, 1 / 20) * speed.x; last = now;
-      draw();
-      raf = visible && !reduceMotion.matches ? requestAnimationFrame(loop) : 0;
-    }
-    const start = () => { if (!raf && !reduceMotion.matches) { last = performance.now(); raf = requestAnimationFrame(loop); } };
-    size(); draw(); start();
-    new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) start(); }).observe(box);
-    addEventListener('resize', () => { size(); draw(); });
-    addEventListener('scroll', () => { if (!raf) draw(); }, { passive: true });
-    matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { size(); draw(); });
-    box.addEventListener('pointerenter', () => speed.to(2.4));
-    box.addEventListener('pointerleave', () => speed.to(1));
-  })();
+    };
+    const electrons = (front) => {
+      pos.forEach((p, i) => {
+        if (i <= 2 && q2 > 0) return;                         // the travellers are drawn later
+        if ((p.z < 0) === front) return;
+        ctx.globalAlpha = (p.z < 0 ? 0.45 : 1) * atomA;
+        ctx.fillStyle = C.blue;
+        ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(2.2, (s / 95) + p.z * 1.3), 0, Math.PI * 2); ctx.fill();
+      });
+    };
 
-  /* ---------------- SATE rings: draw once when they come into view ---------------- */
-  (() => {
-    const layers = $('#layers'); if (!layers) return;
-    if (reduceMotion.matches || !('IntersectionObserver' in window)) { layers.classList.add('is-in'); return; }
-    new IntersectionObserver(([e], o) => { if (e.isIntersecting) { layers.classList.add('is-in'); o.disconnect(); } }, { threshold: 0.55 }).observe(layers);
-  })();
+    if (atomA > 0.01) {
+      paths(false); electrons(false);
+      // nucleus: headshot cross-fades into the SATE recorder
+      const nr = s * 0.28 * (1 - 0.25 * q2);
+      const headA = (1 - win(q1, 0.15, 0.6)) * atomA;
+      if (headA > 0.01) {
+        ctx.save(); ctx.globalAlpha = headA;
+        ctx.beginPath(); ctx.arc(cx, cy, nr, 0, Math.PI * 2); ctx.closePath();
+        ctx.fillStyle = C.soft; ctx.fill(); ctx.clip();
+        if (headOK) {
+          const iw = head.naturalWidth, ih = head.naturalHeight, sc = (2 * nr) / Math.min(iw, ih);
+          ctx.drawImage(head, cx - iw * sc / 2, cy - ih * sc * 0.42, iw * sc, ih * sc);
+        } else {
+          ctx.fillStyle = C.blue; ctx.font = `750 ${Math.round(nr * 0.62)}px "Bricolage Grotesque", Arial, sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('TN', cx, cy + nr * 0.04);
+        }
+        ctx.restore();
+      }
+      const devA = win(q1, 0.3, 0.8) * atomA;
+      if (devA > 0.01 && device.complete && device.naturalWidth) {
+        const dh = s * 0.6 * (1 - 0.25 * q2), dw = dh * device.naturalWidth / device.naturalHeight;
+        const lift = (1 - win(q1, 0.3, 1)) * s * 0.12;
+        ctx.save(); ctx.globalAlpha = devA;
+        ctx.translate(cx, cy + lift); ctx.rotate((1 - win(q1, 0.3, 1)) * -0.18);
+        ctx.drawImage(device, -dw * 0.46, -dh * 0.52, dw, dh);
+        ctx.restore();
+      }
+      // ring 1 closes, ring 2 reaches about half: where SATE is today
+      if (q1 > 0.5) {
+        const r1 = s * RINGS[0] * (1 - 0.25 * q2), r2 = s * RINGS[1] * (1 - 0.25 * q2);
+        ctx.lineWidth = 2.2; ctx.strokeStyle = C.blue; ctx.lineCap = 'round';
+        ctx.globalAlpha = atomA;
+        ctx.beginPath(); ctx.arc(cx, cy, r1, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * win(q1, 0.55, 0.95)); ctx.stroke();
+        ctx.globalAlpha = 0.6 * atomA;
+        ctx.beginPath(); ctx.arc(cx, cy, r2, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * 0.55 * win(q1, 0.7, 1)); ctx.stroke();
+        ctx.lineCap = 'butt';
+      }
+      paths(true); electrons(true);
+    }
+
+    // --- scene 3 and 4: three travellers leave the atom
+    if (q2 > 0) {
+      const er = Math.max(3.5, s / 80);
+      const land = [win(q2, 0, 0.8), win(q2, 0.1, 0.9), win(q2, 0.2, 1)];
+      const p0 = { x: lerp(pos[0].x, N[0].x, land[0]), y: lerp(pos[0].y, N[0].y, land[0]) };
+      const p1 = { x: lerp(pos[1].x, N[1].x, land[1]), y: lerp(pos[1].y, N[1].y, land[1]) };
+      // the rider lands on the second date, then rides the thread down
+      const riderStart = { x: lerp(pos[2].x, N[1].x, land[2]), y: lerp(pos[2].y, N[1].y, land[2]) };
+      const onThread = land[2] >= 1 ? 1 : 0;
+      let rider = onThread ? { x: tx, y: tipY } : riderStart;
+      // scene 5: the rider leaves the end of the thread for the email
+      if (q4 > 0) rider = { x: lerp(tx, D.x, win(q4, 0, 0.6)), y: lerp(Math.min(tipY, Rl.bottom), D.y, win(q4, 0, 0.6)) };
+
+      // thread from the second date to the rider
+      if (onThread && tipY > N[1].y + 1) {
+        const end = q4 > 0 ? Rl.bottom : tipY;
+        ctx.globalAlpha = 1; ctx.strokeStyle = C.blue; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(tx, Math.max(-10, N[1].y)); ctx.lineTo(tx, Math.min(H + 10, end)); ctx.stroke();
+        // stops: one ring per heading; filled once the thread has passed it
+        stops.forEach(h => {
+          const r = h.getBoundingClientRect(), y = r.top + r.height / 2;
+          const passed = end >= y;
+          h.classList.toggle('is-lit', passed);
+          if (y < -20 || y > H + 20) return;
+          ctx.beginPath(); ctx.arc(tx, y, 6, 0, Math.PI * 2);
+          ctx.fillStyle = passed ? C.blue : C.paper; ctx.fill();
+          ctx.lineWidth = 2; ctx.strokeStyle = passed ? C.blue : C.rule; ctx.stroke();
+        });
+      } else stops.forEach(h => h.classList.remove('is-lit'));
+
+      ctx.fillStyle = C.blue; ctx.globalAlpha = 1;
+      for (const p of [p0, p1]) { ctx.beginPath(); ctx.arc(p.x, p.y, er, 0, Math.PI * 2); ctx.fill(); }
+      // the rider glows a little so the eye can follow it
+      const fadeRider = q4 > 0.6 ? 1 - win(q4, 0.6, 0.9) : 1;
+      ctx.globalAlpha = 0.18 * fadeRider; ctx.beginPath(); ctx.arc(rider.x, rider.y, er * 2.6, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = fadeRider; ctx.beginPath(); ctx.arc(rider.x, rider.y, er, 0, Math.PI * 2); ctx.fill();
+
+      // --- scene 5: the small atom forms around the rider's landing point
+      if (q4 > 0.4) {
+        const f = win(q4, 0.4, 1), ms = D.w;
+        const nr = ms * 0.2;
+        ctx.globalAlpha = f;
+        ctx.save(); ctx.beginPath(); ctx.arc(D.x, D.y, nr * f, 0, Math.PI * 2); ctx.fillStyle = C.soft; ctx.fill(); ctx.clip();
+        if (headOK) { const iw = head.naturalWidth, ih = head.naturalHeight, sc = (2 * nr) / Math.min(iw, ih); ctx.drawImage(head, D.x - iw * sc / 2, D.y - ih * sc * 0.42, iw * sc, ih * sc); }
+        else { ctx.fillStyle = C.blue; ctx.font = `750 ${Math.round(nr * 0.62)}px "Bricolage Grotesque", Arial, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('TN', D.x, D.y + nr * 0.04); }
+        ctx.restore();
+        E.forEach((e, i) => {
+          const sh = SHELL[e.si];
+          const R = ms * (e.si ? 0.42 : 0.3);
+          const a = spin * sh.speed + (e.k / sh.n) * Math.PI * 2 + e.si * 0.7;
+          const o = orbitPoint(D.x, D.y, R, a, sh.tilt, sh.rot);
+          const p = { x: lerp(rider.x, o.x, f), y: lerp(rider.y, o.y, f) };
+          ctx.globalAlpha = f * (o.z < 0 ? 0.5 : 1);
+          ctx.beginPath(); ctx.arc(p.x, p.y, 3.2 + o.z, 0, Math.PI * 2); ctx.fill();
+        });
+        ctx.strokeStyle = C.ink; ctx.lineWidth = 1;
+        SHELL.forEach((sh, si) => {
+          const R = ms * (si ? 0.42 : 0.3);
+          ctx.globalAlpha = 0.22 * f; ctx.beginPath();
+          for (let i = 0; i <= 72; i++) { const q = orbitPoint(D.x, D.y, R, (i / 72) * Math.PI * 2, sh.tilt, sh.rot); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); }
+          ctx.stroke();
+        });
+      }
+    } else stops.forEach(h => h.classList.remove('is-lit'));
+    ctx.globalAlpha = 1;
+  }
+
+  /* DOM side of the film: text and media, also pure functions of scroll */
+  const restTop = el => el.getBoundingClientRect().top - (el._ty || 0);   // measure without our own offset
+  function stage(F) {
+    // scene 1 text steps aside as the atom leaves
+    const out = F.q1;
+    aboutText.style.transform = `translate3d(0, ${(-out * 90).toFixed(1)}px, 0)`;
+    aboutText.style.opacity = String(1 - win(out, 0, 0.55));
+    // every [data-in] arrives while it climbs from the bottom to 78% of the screen
+    for (const el of ins) {
+      const p = smooth((H * 0.98 - restTop(el)) / (H * 0.2));
+      el._ty = (1 - p) * 28;
+      el.style.transform = `translate3d(0, ${el._ty.toFixed(1)}px, 0)`;
+      el.style.opacity = String(0.08 + 0.92 * p);
+    }
+    // the video opens out of a small circle, like the nucleus it came from
+    const v = iris.getBoundingClientRect();
+    const pv = smooth((H * 0.95 - v.top) / (H * 0.6));
+    iris.style.clipPath = pv >= 1 ? 'none' : `circle(${(7 + pv * 70).toFixed(2)}% at 50% 50%)`;
+    // photos rise one after another
+    for (const row of rises) {
+      const top = restTop(row.children[0]);
+      [...row.children].forEach((c, i) => {
+        const p = smooth((H * 1.0 - top) / (H * 0.32) - i * 0.12);
+        c._ty = (1 - p) * 70;
+        c.style.transform = `translate3d(0, ${c._ty.toFixed(1)}px, 0)`;
+        c.style.opacity = String(0.15 + 0.85 * p);
+      });
+    }
+    // progress line and the active section in the bar
+    const max = document.documentElement.scrollHeight - H;
+    bar.style.transform = `scaleX(${clamp(scrollY / Math.max(1, max)).toFixed(4)})`;
+    let cur = null;
+    navSecs.forEach(s => { if (s.getBoundingClientRect().top <= H * 0.4) cur = s.id; });
+    if (scrollY >= max - 4) cur = 'contact';
+    navLinks.forEach(a => a.classList.toggle('is-active', a.dataset.section === cur));
+  }
+
+  /* one loop: Lenis (if any), then compose -> stage -> draw.
+     The canvas redraws every frame only while an atom is spinning on screen or the page moves. */
+  let lastY = -1, lastT = performance.now(), F = null;
+  function frame(now) {
+    if (lenis) lenis.raf(now);
+    const dt = Math.min((now - lastT) / 1000, 1 / 20); lastT = now;
+    const moved = scrollY !== lastY; lastY = scrollY;
+    if (!reduceMotion.matches) spin += dt * speed.x;
+    if (moved || !F) { F = compose(); stage(F); }
+    const atomOnScreen = (F.q2 < 1 && F.B.top < H * 1.4) || F.q4 > 0.3 || F.A.bottom > 0;
+    if (moved || (atomOnScreen && !reduceMotion.matches)) { if (!moved) F = compose(); draw(F); }
+    requestAnimationFrame(frame);
+  }
+  size(); F = compose(); stage(F); draw(F);
+  requestAnimationFrame(frame);
+  addEventListener('resize', () => { size(); F = compose(); stage(F); draw(F); });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { size(); draw(F); });
+  document.fonts?.ready.then(() => { F = compose(); stage(F); draw(F); });
+  head.addEventListener('load', () => draw(compose()));
+  device.addEventListener('load', () => draw(compose()));
+  slotA.addEventListener('pointerenter', () => speed.to(2.4));
+  slotA.addEventListener('pointerleave', () => speed.to(1));
 
   /* ---------------- Video: custom play button ---------------- */
   (() => {
@@ -259,7 +445,7 @@
       show(items.indexOf(btn));
       if (!wasOpen) { from = thumbRect(); prog.jump(0); }
       isOpen = true; prog.rest = null;
-      lb.hidden = false; document.documentElement.style.overflow = 'hidden';
+      lb.hidden = false; document.documentElement.style.overflow = 'hidden'; lenis?.stop();
       dx.jump(0); dy.jump(0);
       prog.to(1, { damping: 1, response: 0.38 });
       $('.lightbox__close', lb).focus({ preventScroll: true });
@@ -274,7 +460,7 @@
       to = { ...to, x: p ? (curX - from.x * (1 - p)) / p : to.x, y: p ? (curY - from.y * (1 - p)) / p : to.y };
       prog.rest = () => {
         if (isOpen) return;
-        lb.hidden = true; document.documentElement.style.overflow = '';
+        lb.hidden = true; document.documentElement.style.overflow = ''; lenis?.start();
         lastFocus?.focus({ preventScroll: true });
       };
       prog.to(0, { damping: 1, response: 0.34 });
