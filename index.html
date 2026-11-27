@@ -4,11 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tri Nguyen</title>
-  <meta name="description" content="Tri Nguyen (Nguyễn Đức Trí), Embedded Sensing and Computing (ESC) Group at the University at Buffalo. Working on SATE.">
+  <meta name="description" content="Tri Nguyen (Nguyễn Đức Trí). Computer Science at the University at Buffalo, Embedded Sensing and Computing (ESC) Group.">
   <meta property="og:title" content="Tri Nguyen">
-  <meta property="og:description" content="ESC Group, University at Buffalo. Working on SATE.">
-  <meta name="theme-color" content="#f2f4f3" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0b141b" media="(prefers-color-scheme: dark)">
+  <meta property="og:description" content="Computer Science at the University at Buffalo, ESC Group.">
+  <meta name="theme-color" content="#f2f4f3">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230e1b26'/%3E%3Ctext x='32' y='43' font-family='Helvetica,Arial' font-weight='800' font-size='30' text-anchor='middle' fill='%23f2f4f3'%3ET%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,89 +32,82 @@
 
   <main id="main">
     <!-- ABOUT -->
-    <section class="about" id="about">
+    <section class="about" id="about" data-scene="about">
+      <div class="about__wash" aria-hidden="true"></div>
       <div class="w about__grid">
         <div class="about__text">
-          <h1 class="about__name"><span class="line"><span>Tri</span></span><span class="line"><span>Nguyen</span></span></h1>
+          <h1 class="about__name"><span class="line" data-depth="1"><span>Tri</span></span><span class="line" data-depth="0.45"><span>Nguyen</span></span></h1>
           <p class="about__vn meta">Nguyễn Đức Trí</p>
           <p class="about__role"><a href="https://cse.buffalo.edu/~wenyaoxu/esc.html">Embedded Sensing and Computing (ESC) Group</a><br>B.S. Computer Science, University at Buffalo</p>
           <div class="about__bio">
-            <p>I'm a first-year Computer Science student at the University at Buffalo. I joined the ESC Group in September 2026 and work on the SATE project, a tool for speech-language pathologists (SLPs) that turns recordings of children talking into transcripts and language measures.</p>
-            <p>I'm still learning, mostly about speech and language AI and how it can be used in health care.</p>
+            <p>I'm a first-year Computer Science student at the University at Buffalo.</p>
+            <p>If I had to describe myself in one word, it would be "Carbon." Carbon bonds with almost every element, and I think my strength is the same. I work best with other people, when our different ideas come together.</p>
           </div>
           <ul class="about__links">
             <li><a href="mailto:ductring@buffalo.edu">ductring@buffalo.edu</a></li>
             <li><a href="https://github.com/dtri2206" target="_blank" rel="noopener">GitHub</a></li>
           </ul>
         </div>
-        <figure class="headshot">
-          <img src="assets/img/headshot.jpg" width="800" height="1000" alt="Tri Nguyen" onerror="this.parentElement.classList.add('is-empty'); this.remove();">
-          <span class="headshot__empty" aria-hidden="true">TN</span>
-        </figure>
+        <div class="orbit" id="orbit">
+          <canvas class="orbit__back" aria-hidden="true"></canvas>
+          <figure class="headshot">
+            <img src="assets/img/headshot.jpg" width="800" height="1000" alt="Tri Nguyen" onerror="this.parentElement.classList.add('is-empty'); this.remove();">
+            <span class="headshot__empty" aria-hidden="true">TN</span>
+          </figure>
+          <canvas class="orbit__front" aria-hidden="true"></canvas>
+          <p class="orbit__label meta" aria-hidden="true"><b>C</b> 6 electrons</p>
+        </div>
       </div>
     </section>
 
-    <!-- RESEARCH -->
-    <section class="sec" id="research">
+    <!-- RESEARCH (dark band) -->
+    <section class="sec band" id="research" data-scene="research" data-dark>
+      <canvas class="wave" id="wave" aria-hidden="true"></canvas>
       <div class="w sec__grid">
         <header class="sec__head">
           <h2>Research</h2>
-          <p class="meta meta--accent">SATE, ESC Group</p>
+          <p class="meta meta--accent">SATE</p>
         </header>
         <div class="sec__body">
-          <div class="sate reveal">
-            <div class="sate__text">
-              <p class="lead">SATE is a small recorder and an app that turn everyday conversation into a transcript and language measures, so SLPs can follow a child's progress session by session.</p>
-              <p class="muted">I work on the language analysis behind it, mostly with large language models.</p>
-            </div>
-            <figure class="sate__device">
-              <img src="assets/img/sate-device-hand.webp" width="1282" height="1744" loading="lazy" alt="The SATE recorder held in one hand">
-            </figure>
+          <p class="lead reveal">I work on SATE. SATE starts from one idea: a small recorder that can understand a person from sound alone.</p>
+          <div class="vision reveal">
+            <p>Today it does the first step, understanding how one child uses English, and turns a conversation into a transcript and language measures. The next steps are about hearing more: more languages, and more of the everyday sounds around a person.</p>
+            <a class="vision__link" href="https://sate.agency/" target="_blank" rel="noopener">sate.agency <span aria-hidden="true">↗</span></a>
           </div>
-
-          <article class="work reveal">
-            <h3>SATE 2.0: the language around a child at home</h3>
-            <p>SATE 2.0 works on long home recordings, from 1 to 16 hours. I build the part that decides who each line is said to: the target child, another child, or an adult. From these labels, code counts how much speech the child hears directly, how often the child starts talking, and the back-and-forth turns, per activity and per hour. These numbers help pick the 5 to 15 minute episodes that an SLP then analyzes in detail. I test it on a public 14-hour family recording from HomeBank.</p>
-            <ol class="steps" aria-label="SATE 2.0 pipeline">
-              <li><span>01</span>Record 1-16 h</li>
-              <li><span>02</span>Who talks to whom</li>
-              <li><span>03</span>Metrics per hour</li>
-              <li><span>04</span>Pick episodes</li>
-              <li><span>05</span>Language sample analysis</li>
-            </ol>
-          </article>
-
-          <article class="work reveal">
-            <h3>Session report for speech therapy</h3>
-            <p>A language model reads the transcript of a therapy session and finds the goals, the activities and each practice, with how much help the child needed: on their own, with a cue, with a model, or after a correction. I compare every version with hand labels over three runs, so a change only stays when it really helps.</p>
-          </article>
-
-          <article class="work reveal">
-            <h3>SATE demo and website</h3>
-            <p>I redesigned the segment picker in the SATE web demo, where an SLP chooses which part of a recording to analyze, and I built the SATE product website.</p>
-          </article>
+          <figure class="layers" id="layers" aria-label="The SATE recorder inside five rings: the first ring is today, the second is in progress, the other three are ahead.">
+            <svg class="layers__rings" viewBox="-260 -260 520 520" aria-hidden="true">
+              <circle class="ring ring--3" r="176"/>
+              <circle class="ring ring--4" r="216"/>
+              <circle class="ring ring--5" r="254"/>
+              <circle class="ring ring--2-track" r="136"/>
+              <circle class="ring ring--2" r="136" pathLength="100"/>
+              <circle class="ring ring--1" r="96" pathLength="100"/>
+            </svg>
+            <img class="layers__device" src="assets/img/sate-device-hand.webp" width="1282" height="1744" loading="lazy" alt="">
+            <span class="layers__tag layers__tag--1 meta">today</span>
+            <span class="layers__tag layers__tag--2 meta">next</span>
+          </figure>
         </div>
       </div>
     </section>
 
     <!-- NEWS -->
-    <section class="sec" id="news">
+    <section class="sec" id="news" data-scene="news">
       <div class="w sec__grid">
         <header class="sec__head">
           <h2>News</h2>
         </header>
         <div class="sec__body">
           <ul class="news">
-            <li class="reveal"><span class="news__date">Nov 2026</span><p>Showed the SATE 2.0 features at the ESC group meeting.</p></li>
-            <li class="reveal"><span class="news__date">Sep 2026</span><p>Joined the ESC Group as an undergraduate researcher.</p></li>
             <li class="reveal"><span class="news__date">Fall 2026</span><p>Started my B.S. in Computer Science at the University at Buffalo.</p></li>
+            <li class="reveal"><span class="news__date">Sep 2026</span><p>Joined the ESC Group.</p></li>
           </ul>
         </div>
       </div>
     </section>
 
     <!-- BEFORE UB -->
-    <section class="sec" id="before-ub">
+    <section class="sec" id="before-ub" data-scene="before">
       <div class="w sec__grid">
         <header class="sec__head">
           <h2>Before UB</h2>
@@ -125,16 +117,16 @@
           <article class="work reveal">
             <h3>Listening Station <span class="meta">2025</span></h3>
             <p>A Vietnamese voice assistant for people who come to the Nụ Cười meal program of Bông Sen Charity in Ho Chi Minh City. It records and transcribes a conversation, finds urgent needs like medical or financial aid, and organizes the case for the volunteers. I built it with Google Speech-to-Text and Text-to-Speech after volunteering in the kitchen, where many people had problems much bigger than hunger.</p>
-            <div class="video">
-              <video id="ls-video" preload="none" playsinline poster="assets/img/listening-station-poster.jpg" width="1280" height="720">
+            <div class="video" id="ls-wrap">
+              <video id="ls-video" preload="none" playsinline poster="assets/img/listening-station-poster.jpg" width="1920" height="1080">
                 <source src="assets/video/listening-station.mp4" type="video/mp4">
               </video>
               <button class="video__play" id="ls-play" type="button"><span class="video__icon" aria-hidden="true"></span>Watch the demo <span class="meta">4:31</span></button>
             </div>
-            <div class="photos photos--4" data-group="volunteer">
+            <div class="photos photos--4" data-group="volunteer" data-drift>
               <button class="shot" data-zoom><img src="assets/img/volunteer-2.jpg" width="1200" height="900" loading="lazy" alt="Cooking rice at Quán cơm Nụ Cười 9"></button>
               <button class="shot" data-zoom><img src="assets/img/volunteer-1.jpg" width="1160" height="1276" loading="lazy" alt="Handing out meals on the street"></button>
-              <button class="shot" data-zoom><img src="assets/img/volunteer-9.jpg" width="1400" height="1050" loading="lazy" alt="Lunch service at the community kitchen"></button>
+              <button class="shot" data-zoom><img src="assets/img/volunteer-9.jpg" width="2000" height="1500" loading="lazy" alt="Lunch service at the community kitchen"></button>
               <button class="shot" data-zoom><img src="assets/img/volunteer-5.jpg" width="1200" height="900" loading="lazy" alt="The volunteer team at Nụ Cười"></button>
             </div>
           </article>
@@ -156,7 +148,7 @@
           <article class="work reveal">
             <h3>Outside the lab</h3>
             <p>I play soccer with my friends (our class got third place at the Năng Khiếu Championship 2025), I have kept ants for three years, and I play billiards, where I got a bronze medal at a club tournament.</p>
-            <div class="photos photos--3" data-group="outside">
+            <div class="photos photos--3" data-group="outside" data-drift>
               <button class="shot" data-zoom><img src="assets/img/soccer-team.jpg" width="1400" height="1050" loading="lazy" alt="Our class team with the third place trophy"></button>
               <button class="shot" data-zoom><img src="assets/img/ants.jpg" width="933" height="1400" loading="lazy" alt="Taking care of an ant nest"></button>
               <button class="shot" data-zoom><img src="assets/img/billiards-medal.jpg" width="1050" height="1400" loading="lazy" alt="Holding the bronze medal at the billiards club"></button>
@@ -166,8 +158,8 @@
       </div>
     </section>
 
-    <!-- CONTACT -->
-    <section class="sec sec--contact" id="contact">
+    <!-- CONTACT (dark band) -->
+    <section class="sec band band--end" id="contact" data-scene="contact" data-dark>
       <div class="w sec__grid">
         <header class="sec__head">
           <h2>Contact</h2>
@@ -183,10 +175,9 @@
           </ul>
         </div>
       </div>
+      <footer class="foot"><div class="w foot__inner"><span>© <span id="year">2026</span> Tri Nguyen</span><a href="#about">Back to top</a></div></footer>
     </section>
   </main>
-
-  <footer class="foot"><div class="w foot__inner"><span>© <span id="year">2026</span> Tri Nguyen</span><a href="#about">Back to top</a></div></footer>
 
   <div class="peek" id="peek" aria-hidden="true"><img alt=""></div>
 
