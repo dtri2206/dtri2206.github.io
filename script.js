@@ -495,29 +495,38 @@
     };
     const warm = () => rows.forEach(r => preload(previewOf($('img', r))));
     addEventListener('load', () => (window.requestIdleCallback || setTimeout)(warm, { timeout: 1500 }));
-    let want = null;
-    rows.forEach(row => {
-      row.addEventListener('pointerenter', e => {
-        if (!finePointer.matches || e.pointerType !== 'mouse') return;
-        const src = previewOf($('img', row));
-        want = src;
-        if (!inside) { px.jump(e.clientX); py.jump(e.clientY); }
-        inside = true;
-        preload(src).then(() => {
-          if (want !== src || !inside) return;      // the pointer moved on before it was ready
-          pimg.src = src; ps.to(1);
-        });
+    // Show the certificate of whatever row is under the pointer: when the pointer moves AND when the
+    // page scrolls under a still pointer (browsers send no pointer events while only the page moves).
+    let want = null, current = null, mx = -1, my = -1;
+    const hide = () => { inside = false; current = null; want = null; ps.to(0); };
+    function hoverAt(x, y, fromScroll) {
+      if (!finePointer.matches || x < 0) return;
+      const el = document.elementFromPoint(x, y);
+      const row = el && el.closest('.award');
+      if (!row || $('#lightbox').hidden === false) { if (inside) hide(); return; }
+      if (!inside) { px.jump(x); py.jump(y); }
+      inside = true;
+      if (fromScroll) { px.to(x); py.to(y); }
+      if (row === current) return;
+      current = row;
+      const src = previewOf($('img', row));
+      want = src;
+      preload(src).then(() => {
+        if (want !== src || !inside) return;      // the pointer moved on before it was ready
+        pimg.src = src; ps.to(1);
       });
-    });
+    }
+    addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse') return;
+      if (inside) { rot = clamp((e.clientX - lastX) * 0.4, -6, 6); }
+      lastX = e.clientX; mx = e.clientX; my = e.clientY;
+      hoverAt(mx, my, false);
+      if (inside) { px.to(mx); py.to(my); }
+    }, { passive: true });
+    addEventListener('scroll', () => requestAnimationFrame(() => hoverAt(mx, my, true)), { passive: true });
+    document.documentElement.addEventListener('pointerleave', () => { mx = my = -1; if (inside) hide(); });
     const list = $('.awards');
-    list.addEventListener('pointermove', e => {
-      if (!inside) return;
-      rot = clamp((e.clientX - lastX) * 0.4, -6, 6); lastX = e.clientX;
-      px.to(e.clientX); py.to(e.clientY);
-    });
-    list.addEventListener('pointerleave', () => { inside = false; ps.to(0); });
-    addEventListener('scroll', () => { if (inside) { inside = false; ps.to(0); } }, { passive: true });
-    list.addEventListener('click', () => { inside = false; ps.jump(0); });
+    list.addEventListener('click', () => { inside = false; current = null; ps.jump(0); });
   })();
 
   /* ---------------- Lightbox: zooms from the tapped item and back ---------------- */
