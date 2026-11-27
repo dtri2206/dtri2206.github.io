@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tri Nguyen</title>
+  <meta name="description" content="Tri Nguyen (Nguyễn Đức Trí), undergraduate researcher in the Embedded Sensing and Computing (ESC) Group at the University at Buffalo. Working on SATE.">
+  <meta property="og:title" content="Tri Nguyen">
+  <meta property="og:description" content="Undergraduate researcher, ESC Group, University at Buffalo. Working on SATE.">
+  <meta name="theme-color" content="#f2f4f3" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0b141b" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230e1b26'/%3E%3Ctext x='32' y='43' font-family='Helvetica,Arial' font-weight='800' font-size='30' text-anchor='middle' fill='%23f2f4f3'%3ET%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="top" id="top-bar">
+    <div class="w top__inner">
+      <a class="top__name" href="#about">Tri Nguyen</a>
+      <nav class="top__nav" aria-label="Sections">
+        <a href="#research" data-section="research">Research</a>
+        <a href="#news" data-section="news">News</a>
+        <a href="#before-ub" data-section="before-ub">Before UB</a>
+        <a href="#contact" data-section="contact">Contact</a>
+        <span class="top__bar" aria-hidden="true"></span>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ABOUT -->
+    <section class="about" id="about">
+      <div class="w about__grid">
+        <div class="about__text">
+          <h1 class="about__name"><span class="line"><span>Tri</span></span><span class="line"><span>Nguyen</span></span></h1>
+          <p class="about__vn meta">Nguyễn Đức Trí</p>
+          <p class="about__role">Undergraduate researcher, <a href="https://cse.buffalo.edu/~wenyaoxu/esc.html">Embedded Sensing and Computing (ESC) Group</a><br>B.S. Computer Science, University at Buffalo</p>
+          <div class="about__bio">
+            <p>I'm a first-year Computer Science student at the University at Buffalo. Since September 2026 I work in the ESC Group, advised by <a href="https://cse.buffalo.edu/~wenyaoxu/">Prof. Wenyao Xu</a>, on SATE, a system that helps speech-language pathologists (SLPs) understand how children talk and what language they hear.</p>
+            <p>I'm interested in speech and language AI for health, and in building tools that clinicians can actually use. If I had to describe myself in one word, it would be "Carbon": I work best when I connect with other people and their ideas.</p>
+          </div>
+          <ul class="about__links">
+            <li><a href="mailto:ductring@buffalo.edu">ductring@buffalo.edu</a></li>
+            <li><a href="https://github.com/dtri2206" target="_blank" rel="noopener">GitHub</a></li>
+          </ul>
+        </div>
+        <figure class="headshot">
+          <img src="assets/img/headshot.jpg" width="800" height="1000" alt="Tri Nguyen" onerror="this.parentElement.classList.add('is-empty'); this.remove();">
+          <span class="headshot__empty" aria-hidden="true">TN</span>
+        </figure>
+      </div>
+    </section>
+
+    <!-- RESEARCH -->
+    <section class="sec" id="research">
+      <div class="w sec__grid">
+        <header class="sec__head">
+          <h2>Research</h2>
+          <p class="meta meta--accent">SATE, ESC Group</p>
+        </header>
+        <div class="sec__body">
+          <div class="sate reveal">
+            <div class="sate__text">
+              <p class="lead">SATE is a small recorder and an app that turn everyday conversation into a transcript and language measures, so SLPs can follow a child's progress session by session.</p>
+              <p class="muted">I work on the language analysis behind it, mostly with large language models.</p>
+            </div>
+            <figure class="sate__device">
+              <img src="assets/img/sate-device-hand.webp" width="1282" height="1744" loading="lazy" alt="The SATE recorder held in one hand">
+            </figure>
+          </div>
+
+          <article class="work reveal">
+            <h3>SATE 2.0: the language around a child at home</h3>
+            <p>SATE 2.0 works on long home recordings, from 1 to 16 hours. I build the part that decides who each line is said to: the target child, another child, or an adult. From these labels, code counts how much speech the child hears directly, how often the child starts talking, and the back-and-forth turns, per activity and per hour. These numbers help pick the 5 to 15 minute episodes that an SLP then analyzes in detail. I test it on a public 14-hour family recording from HomeBank.</p>
+            <ol class="steps" aria-label="SATE 2.0 pipeline">
+              <li><span>01</span>Record 1-16 h</li>
+              <li><span>02</span>Who talks to whom</li>
+              <li><span>03</span>Metrics per hour</li>
+              <li><span>04</span>Pick episodes</li>
+              <li><span>05</span>Language sample analysis</li>
+            </ol>
+          </article>
+
+          <article class="work reveal">
+            <h3>Session report for speech therapy</h3>
+            <p>A language model reads the transcript of a therapy session and finds the goals, the activities and each practice, with how much help the child needed: on their own, with a cue, with a model, or after a correction. I compare every version with hand labels over three runs, so a change only stays when it really helps.</p>
+          </article>
+
+          <article class="work reveal">
+            <h3>SATE demo and website</h3>
+            <p>I redesigned the segment picker in the SATE web demo, where an SLP chooses which part of a recording to analyze, and I built the SATE product website.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEWS -->
+    <section class="sec" id="news">
+      <div class="w sec__grid">
+        <header class="sec__head">
+          <h2>News</h2>
+        </header>
+        <div class="sec__body">
+          <ul class="news">
+            <li class="reveal"><span class="news__date">Nov 2026</span><p>Showed the SATE 2.0 features at the ESC group meeting.</p></li>
+            <li class="reveal"><span class="news__date">Sep 2026</span><p>Joined the ESC Group as an undergraduate researcher.</p></li>
+            <li class="reveal"><span class="news__date">Fall 2026</span><p>Started my B.S. in Computer Science at the University at Buffalo.</p></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- BEFORE UB -->
+    <section class="sec" id="before-ub">
+      <div class="w sec__grid">
+        <header class="sec__head">
+          <h2>Before UB</h2>
+          <p class="meta meta--accent">High School for the Gifted, VNU-HCM</p>
+        </header>
+        <div class="sec__body">
+          <article class="work reveal">
+            <h3>Listening Station <span class="meta">2025</span></h3>
+            <p>A Vietnamese voice assistant for people who come to the Nụ Cười meal program of Bông Sen Charity in Ho Chi Minh City. It records and transcribes a conversation, finds urgent needs like medical or financial aid, and organizes the case for the volunteers. I built it with Google Speech-to-Text and Text-to-Speech after volunteering in the kitchen, where many people had problems much bigger than hunger.</p>
+            <div class="video">
+              <video id="ls-video" preload="none" playsinline poster="assets/img/listening-station-poster.jpg" width="1280" height="720">
+                <source src="assets/video/listening-station.mp4" type="video/mp4">
+              </video>
+              <button class="video__play" id="ls-play" type="button"><span class="video__icon" aria-hidden="true"></span>Watch the demo <span class="meta">4:31</span></button>
+            </div>
+            <div class="photos photos--4" data-group="volunteer">
+              <button class="shot" data-zoom><img src="assets/img/volunteer-2.jpg" width="1200" height="900" loading="lazy" alt="Cooking rice at Quán cơm Nụ Cười 9"></button>
+              <button class="shot" data-zoom><img src="assets/img/volunteer-1.jpg" width="1160" height="1276" loading="lazy" alt="Handing out meals on the street"></button>
+              <button class="shot" data-zoom><img src="assets/img/volunteer-9.jpg" width="1400" height="1050" loading="lazy" alt="Lunch service at the community kitchen"></button>
+              <button class="shot" data-zoom><img src="assets/img/volunteer-5.jpg" width="1200" height="900" loading="lazy" alt="The volunteer team at Nụ Cười"></button>
+            </div>
+          </article>
+
+          <article class="work reveal">
+            <h3>Awards <span class="meta">Click a row to see the certificate</span></h3>
+            <ul class="awards" data-group="awards">
+              <li><button class="award" data-zoom><span class="award__year">2025</span><span class="award__title">First Prize</span><span class="award__org">BME Innovation Competition</span><img src="assets/img/award-bmei.jpg" width="1467" height="965" loading="lazy" alt="BME Innovation Competition 2025, first prize certificate"></button></li>
+              <li><button class="award" data-zoom><span class="award__year">2025</span><span class="award__title">Proficiency Award</span><span class="award__org">Australian Mathematics Competition, Senior Division</span><img src="assets/img/award-amc.jpg" width="1166" height="1600" loading="lazy" alt="Australian Mathematics Competition 2025, proficiency award"></button></li>
+              <li><button class="award" data-zoom><span class="award__year">2022-2023</span><span class="award__title">Third Place</span><span class="award__org">Ho Chi Minh City Excellent Student Award</span><img src="assets/img/award-hcmc-third.jpg" width="1600" height="1200" loading="lazy" alt="Third place plaque, Ho Chi Minh City Excellent Student Award"></button></li>
+              <li><button class="award" data-zoom><span class="award__year">2022-2025</span><span class="award__title">Excellent Student, three years</span><span class="award__org">High School for the Gifted, VNU-HCM and Lê Quý Đôn Secondary School</span><img src="assets/img/award-excellent-2024.jpg" width="1600" height="1121" loading="lazy" alt="Excellent Student certificate, 2024-2025"></button></li>
+              <li><button class="award" data-zoom><span class="award__year">2022-2023</span><span class="award__title">Academic Excellence</span><span class="award__org">District Math Competition</span><img src="assets/img/award-district-math.jpg" width="1600" height="1093" loading="lazy" alt="District Math Competition certificate"></button></li>
+              <li><button class="award" data-zoom><span class="award__year">2022-2023</span><span class="award__title">Consolation Prize</span><span class="award__org">District Casio Competition</span><img src="assets/img/award-casio.jpg" width="1600" height="1105" loading="lazy" alt="District Casio Competition certificate"></button></li>
+              <li><button class="award" data-zoom><span class="award__year">Certificate</span><span class="award__title">Volunteer Leader</span><span class="award__org">Bông Sen Charity, Nụ Cười meal program</span><img src="assets/img/award-volunteer-leader.jpg" width="1600" height="1084" loading="lazy" alt="Volunteer leader certificate from Bông Sen Charity"></button></li>
+              <li><button class="award" data-zoom><span class="award__year">Certificate</span><span class="award__title">Co-founder</span><span class="award__org">The Enten Project</span><img src="assets/img/award-enten.jpg" width="1472" height="1040" loading="lazy" alt="Co-founder certificate, The Enten Project"></button></li>
+            </ul>
+          </article>
+
+          <article class="work reveal">
+            <h3>Outside the lab</h3>
+            <p>I play soccer with my friends (our class got third place at the Năng Khiếu Championship 2025), I have kept ants for three years, and I play billiards, where I got a bronze medal at a club tournament.</p>
+            <div class="photos photos--3" data-group="outside">
+              <button class="shot" data-zoom><img src="assets/img/soccer-team.jpg" width="1400" height="1050" loading="lazy" alt="Our class team with the third place trophy"></button>
+              <button class="shot" data-zoom><img src="assets/img/ants.jpg" width="933" height="1400" loading="lazy" alt="Taking care of an ant nest"></button>
+              <button class="shot" data-zoom><img src="assets/img/billiards-medal.jpg" width="1050" height="1400" loading="lazy" alt="Holding the bronze medal at the billiards club"></button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="sec sec--contact" id="contact">
+      <div class="w sec__grid">
+        <header class="sec__head">
+          <h2>Contact</h2>
+        </header>
+        <div class="sec__body">
+          <div class="mail reveal">
+            <a class="mail__addr" href="mailto:ductring@buffalo.edu" id="email">ductring@buffalo.edu</a>
+            <button class="mail__copy" id="copy" type="button">Copy</button>
+          </div>
+          <ul class="links reveal">
+            <li><span class="meta">Lab</span><a href="https://cse.buffalo.edu/~wenyaoxu/esc.html">ESC Group, University at Buffalo</a></li>
+            <li><span class="meta">GitHub</span><a href="https://github.com/dtri2206" target="_blank" rel="noopener">dtri2206</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot"><div class="w foot__inner"><span>© <span id="year">2026</span> Tri Nguyen</span><a href="#about">Back to top</a></div></footer>
+
+  <div class="peek" id="peek" aria-hidden="true"><img alt=""></div>
+
+  <div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Image viewer">
+    <div class="lightbox__scrim"></div>
+    <img class="lightbox__img" alt="">
+    <p class="lightbox__cap"></p>
+    <button class="lightbox__btn lightbox__close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="lightbox__btn lightbox__prev" aria-label="Previous image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button class="lightbox__btn lightbox__next" aria-label="Next image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js" defer></script>
+</body>
+</html>
