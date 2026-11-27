@@ -92,45 +92,66 @@
     const root = document.documentElement;
     applyPalette();
   }
-  /* Scene colours (UB palette): white -> night blue -> sky -> white -> UB blue.
-     The page blends between them as each section reaches the middle of the screen. */
-  const KEYS = ['paper', 'surface', 'ink', 'muted', 'rule', 'blue', 'soft', 'spark'];
+  /* Scene colours: one ink-blue family, from near white to deep ink, plus UB accents.
+     A scene's "glow" is the light that follows the atom across the background.
+     Colours blend in OKLab, so a light-to-dark change never passes through muddy grey. */
+  const KEYS = ['paper', 'surface', 'ink', 'muted', 'rule', 'blue', 'soft', 'spark', 'glow'];
   const PAL = {
     light: [
-      ['#f6f7f9', '#ffffff', '#1b1f27', '#5e6573', '#dadde3', '#005bbb', '#e3edf9', '#e56a54'],   // about
-      ['#0a1a33', '#10264a', '#eef3fa', '#a9b8cc', '#2a4168', '#ffc72c', '#1a3a68', '#ffc72c'],   // research
-      ['#eaf2fb', '#ffffff', '#10213a', '#4f6077', '#c6d5e8', '#005bbb', '#d6e6f7', '#e56a54'],   // news
-      ['#f6f7f9', '#ffffff', '#1b1f27', '#5e6573', '#dadde3', '#005bbb', '#e3edf9', '#e56a54'],   // before UB
-      ['#005bbb', '#0a4e9e', '#ffffff', '#cfe0f5', '#3f80cc', '#ffffff', '#2f74c4', '#ffc72c'],   // contact
+      ['#f4f6fa', '#ffffff', '#14203a', '#56627a', '#d5dce8', '#005bbb', '#e2ebf7', '#e56a54', '#7fb0ec'],   // about
+      ['#0b1630', '#122244', '#eef3fa', '#a8b6cc', '#26385c', '#ffc72c', '#1a3360', '#ffc72c', '#1f6fd1'],   // research
+      ['#eef2f9', '#ffffff', '#14203a', '#56627a', '#d0d9e7', '#005bbb', '#dde7f5', '#e56a54', '#8ab6ea'],   // news
+      ['#f4f6fa', '#ffffff', '#14203a', '#56627a', '#d5dce8', '#005bbb', '#e2ebf7', '#e56a54', '#9cc1ee'],   // before UB
+      ['#0e1d3c', '#15294f', '#ffffff', '#b8c6de', '#2b3f66', '#ffc72c', '#1d3766', '#ffc72c', '#2a7be0'],   // contact
     ],
     dark: [
-      ['#11141a', '#181c24', '#e8ebf0', '#a0a7b4', '#2a303b', '#5ea2ee', '#18263a', '#f08a74'],
-      ['#071328', '#0e2140', '#eef3fa', '#a9b8cc', '#243a5e', '#ffc72c', '#163257', '#ffc72c'],
-      ['#0f1a2a', '#15233a', '#e6eef8', '#9fb0c6', '#26364d', '#7ab4f2', '#1a2d48', '#f08a74'],
-      ['#11141a', '#181c24', '#e8ebf0', '#a0a7b4', '#2a303b', '#5ea2ee', '#18263a', '#f08a74'],
-      ['#003e82', '#0a4b94', '#ffffff', '#c4d8f2', '#2e68ad', '#ffffff', '#1f5ea8', '#ffc72c'],
+      ['#0d121c', '#151c29', '#e8edf5', '#9ea9bb', '#252e3d', '#6aaaf0', '#172338', '#f08a74', '#1f4f99'],
+      ['#081225', '#0f1d3a', '#eef3fa', '#a8b6cc', '#22365a', '#ffc72c', '#163057', '#ffc72c', '#1f6fd1'],
+      ['#0e1626', '#15203a', '#e6edf7', '#9eadc4', '#25324a', '#7ab4f2', '#182a46', '#f08a74', '#1c4a8f'],
+      ['#0d121c', '#151c29', '#e8edf5', '#9ea9bb', '#252e3d', '#6aaaf0', '#172338', '#f08a74', '#1a4486'],
+      ['#0a1733', '#122449', '#ffffff', '#b8c6de', '#283c63', '#ffc72c', '#1b3463', '#ffc72c', '#2a7be0'],
     ],
   };
+  const GLOW_A = { light: [0.34, 0.55, 0.26, 0.22, 0.6], dark: [0.35, 0.55, 0.3, 0.28, 0.6] };
   const scenes = ['about', 'research', 'news', 'before-ub', 'contact'].map(id => document.getElementById(id));
   const darkMq = matchMedia('(prefers-color-scheme: dark)');
-  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
-  const mixHex = (a, b, t) => { const A = hex(a), B = hex(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
+  // sRGB <-> OKLab (Björn Ottosson)
+  const toLin = c => (c /= 255) <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  const toSrgb = c => Math.round(255 * clamp(c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055));
+  const hexToLab = h => {
+    const [r, g, b] = [1, 3, 5].map(i => toLin(parseInt(h.slice(i, i + 2), 16)));
+    const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+    const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+    const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+    return [0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s, 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s];
+  };
+  const labToHex = ([L, A, B]) => {
+    const l = (L + 0.3963377774 * A + 0.2158037573 * B) ** 3, m = (L - 0.1055613458 * A - 0.0638541728 * B) ** 3, s = (L - 0.0894841775 * A - 1.2914855480 * B) ** 3;
+    const rgb = [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s];
+    return '#' + rgb.map(v => toSrgb(v).toString(16).padStart(2, '0')).join('');
+  };
+  const LAB = {}; for (const k in PAL) LAB[k] = PAL[k].map(row => row.map(hexToLab));
   const themeMeta = $('meta[name="theme-color"]');
   let palKey = '';
   function applyPalette() {
-    const set = PAL[(document.documentElement.dataset.theme || (darkMq.matches ? 'dark' : 'light'))];
-    let cur = set[0].slice();
+    const mode = document.documentElement.dataset.theme || (darkMq.matches ? 'dark' : 'light');
+    const set = LAB[mode], ga = GLOW_A[mode];
+    let cur = set[0].map(v => v.slice()), glowA = ga[0];
     for (let i = 1; i < scenes.length; i++) {
+      // the next scene takes over while its top travels from 62 % to 30 % of the screen
       const t = smooth((0.62 * (H || innerHeight) - scenes[i].getBoundingClientRect().top) / (0.32 * (H || innerHeight)));
       if (t <= 0) break;
-      cur = cur.map((c, k) => mixHex(c, set[i][k], t));
+      cur = cur.map((c, k) => c.map((v, j) => v + (set[i][k][j] - v) * t));
+      glowA = glowA + (ga[i] - glowA) * t;
     }
-    const key = cur.join();
+    const hexes = cur.map(labToHex);
+    C.glowA = glowA;
+    const key = hexes.join();
     if (key === palKey) return;
     palKey = key;
     const st = document.documentElement.style;
-    KEYS.forEach((k, i) => { st.setProperty('--' + (k === 'soft' ? 'blue-soft' : k), cur[i]); C[k] = cur[i]; });
-    themeMeta?.setAttribute('content', cur[0]);
+    KEYS.forEach((k, i) => { st.setProperty('--' + (k === 'soft' ? 'blue-soft' : k), hexes[i]); C[k] = hexes[i]; });
+    themeMeta?.setAttribute('content', hexes[0]);
   }
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height, top: r.top, bottom: r.bottom, left: r.left }; };
 
@@ -173,6 +194,37 @@
     ctx.clearRect(0, 0, W, H);
     const { q1, q2, q4, cx, cy, s, N, D, tx, tipY, Rl } = F;
     const atomA = 1 - win(q2, 0, 0.55);                          // the big atom fades as electrons leave
+
+    // --- light that follows the atom (the background's only light source)
+    {
+      const g1 = { x: lerp(cx, tx, win(q2, 0.3, 1)), y: lerp(cy, tipY, win(q2, 0.3, 1)) };
+      const gx = lerp(g1.x, D.x, q4), gy = lerp(g1.y, D.y, q4);
+      const gr = Math.max(W, H) * lerp(0.55, 0.42, win(q2, 0, 1));
+      const g = ctx.createRadialGradient(gx, gy, 0, gx, gy, gr);
+      const rgb = C.glow.slice(1).match(/../g).map(h => parseInt(h, 16)).join(',');
+      g.addColorStop(0, `rgba(${rgb},${(C.glowA || 0.3).toFixed(3)})`);
+      g.addColorStop(0.45, `rgba(${rgb},${((C.glowA || 0.3) * 0.35).toFixed(3)})`);
+      g.addColorStop(1, `rgba(${rgb},0)`);
+      ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    }
+
+    // --- graphene: a hexagonal carbon lattice that surfaces around SATE
+    const latA = win(q1, 0.25, 0.9) * atomA;
+    if (latA > 0.01) {
+      const a0 = Math.max(18, s * 0.06), hw = a0 * Math.sqrt(3), reach = s * 1.15;
+      ctx.strokeStyle = C.ink; ctx.lineWidth = 1;
+      for (let row = -Math.ceil(reach / (1.5 * a0)); row <= Math.ceil(reach / (1.5 * a0)); row++) {
+        for (let col = -Math.ceil(reach / hw); col <= Math.ceil(reach / hw); col++) {
+          const x = cx + col * hw + (row & 1 ? hw / 2 : 0), y = cy + row * 1.5 * a0;
+          const d = Math.hypot(x - cx, y - cy);
+          if (d > reach || d < s * 0.3) continue;
+          ctx.globalAlpha = latA * 0.16 * (1 - d / reach) * Math.min(1, (d - s * 0.3) / (s * 0.15));
+          ctx.beginPath();
+          for (let k = 0; k < 6; k++) { const ang = Math.PI / 6 + k * Math.PI / 3; const px = x + a0 * Math.cos(ang), py = y + a0 * Math.sin(ang); k ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+          ctx.closePath(); ctx.stroke();
+        }
+      }
+    }
     const transit = W < 860 ? 1 - 0.75 * Math.sin(Math.PI * clamp(q1)) : 1;   // phones: dim while it crosses text
 
     // --- five layers (scene 2): the outer three rings open out of the second orbit
