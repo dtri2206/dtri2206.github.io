@@ -304,7 +304,8 @@
         ctx.fillStyle = C.soft; ctx.fill(); ctx.clip();
         if (headOK) {
           const iw = head.naturalWidth, ih = head.naturalHeight, sc = (2 * nr) / Math.min(iw, ih);
-          ctx.drawImage(head, cx - iw * sc / 2, cy - ih * sc * 0.42, iw * sc, ih * sc);
+          const top = clamp(cy - ih * sc * 0.42, cy + nr - ih * sc, cy - nr);   // keep the circle fully covered
+          ctx.drawImage(head, cx - iw * sc / 2, top, iw * sc, ih * sc);
         } else {
           ctx.fillStyle = C.blue; ctx.font = `750 ${Math.round(nr * 0.62)}px "Bricolage Grotesque", Arial, sans-serif`;
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('TN', cx, cy + nr * 0.04);
@@ -377,7 +378,7 @@
         const nr = ms * 0.2;
         ctx.globalAlpha = f;
         ctx.save(); ctx.beginPath(); ctx.arc(D.x, D.y, nr * f, 0, Math.PI * 2); ctx.fillStyle = C.soft; ctx.fill(); ctx.clip();
-        if (headOK) { const iw = head.naturalWidth, ih = head.naturalHeight, sc = (2 * nr) / Math.min(iw, ih); ctx.drawImage(head, D.x - iw * sc / 2, D.y - ih * sc * 0.42, iw * sc, ih * sc); }
+        if (headOK) { const iw = head.naturalWidth, ih = head.naturalHeight, sc = (2 * nr) / Math.min(iw, ih); ctx.drawImage(head, D.x - iw * sc / 2, clamp(D.y - ih * sc * 0.42, D.y + nr - ih * sc, D.y - nr), iw * sc, ih * sc); }
         else { ctx.fillStyle = C.blue; ctx.font = `750 ${Math.round(nr * 0.62)}px "Bricolage Grotesque", Arial, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('TN', D.x, D.y + nr * 0.04); }
         ctx.restore();
         E.forEach((e, i) => {
